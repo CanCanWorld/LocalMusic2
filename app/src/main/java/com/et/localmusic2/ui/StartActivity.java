@@ -15,7 +15,7 @@ import com.google.android.material.imageview.ShapeableImageView;
 public class StartActivity extends AppCompatActivity {
 
     private TranslateAnimation translateAnimation;
-    private ShapeableImageView mAzi;
+    private ShapeableImageView mLogo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,11 +25,11 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        mAzi = findViewById(R.id.iv_azi);
+        mLogo = findViewById(R.id.iv_azi);
         Glide.with(this)
                 .asGif()
                 .load(R.drawable.gif)
-                .into(mAzi);
+                .into(mLogo);
         TextView mTvTranslate = findViewById(R.id.tv_translate);
         mTvTranslate.post(() -> {
             translateAnimation = new TranslateAnimation(0, mTvTranslate.getWidth(), 0, 0);

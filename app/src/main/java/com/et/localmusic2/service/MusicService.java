@@ -40,7 +40,6 @@ public class MusicService extends Service {
     private static RemoteViews remoteViews;
     private static NotificationManager manager;
     private MusicReceiver musicReceiver;
-    private static final int INTERNAL_TIME = 1000;
     private final List<Song> list = new ArrayList<>();
     public MediaPlayer mediaPlayer;
     int mPosition = -1;
@@ -271,11 +270,6 @@ public class MusicService extends Service {
         }
         //更改通知栏播放状态
         updateNotificationShow(mPosition);
-    }
-
-    public void reset() {
-        mediaPlayer.reset();
-        mPosition = -1;
     }
 
     public void closeNotification() {
