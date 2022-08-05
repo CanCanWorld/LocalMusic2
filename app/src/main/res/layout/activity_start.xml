@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".ui.StartActivity">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_azi"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:src="@drawable/gif"
+        app:shapeAppearanceOverlay="@style/circleImageStyle" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text=" 捏 麻 麻 滴 ！ "
+            android:textColor="@color/white"
+            android:textSize="32sp"
+            android:textStyle="bold|italic" />
+
+        <TextView
+            android:id="@+id/tv_translate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/black"
+            android:text=" 捏 麻 麻 滴 ！ "
+            android:textColor="@color/black"
+            android:textSize="32sp"
+            android:textStyle="bold|italic" />
+    </RelativeLayout>
+</LinearLayout>
