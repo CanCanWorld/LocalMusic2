@@ -2,17 +2,11 @@ package com.et.localmusic2.base;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public abstract class BaseActivity extends AppCompatActivity {
-
-    private static final int FAST_CLICK_DELAY_TIME = 500;
-
-    private static long lastClickTime;
 
     protected Activity context;
 
@@ -34,35 +28,4 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected abstract void initEvent();
 
-
-    /**
-     * 返回
-     */
-    protected void Back(Toolbar toolbar) {
-        toolbar.setNavigationOnClickListener(v -> {
-            context.finish();
-            if (!isFastClick())
-                context.finish();
-        });
-    }
-
-    /**
-     * 两次点击间隔不少于500ms
-     */
-    protected static boolean isFastClick() {
-        boolean flag = true;
-        long currentClickTime = System.currentTimeMillis();
-        if ((currentClickTime - lastClickTime) >= FAST_CLICK_DELAY_TIME) {
-            flag = false;
-        }
-        lastClickTime = currentClickTime;
-        return false;
-    }
-
-    /**
-     * 消息提示
-     */
-    protected void show(CharSequence msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-    }
 }

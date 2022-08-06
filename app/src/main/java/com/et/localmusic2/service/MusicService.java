@@ -213,13 +213,16 @@ public class MusicService extends Service {
         remoteViews.setOnClickPendingIntent(R.id.btn_notification_close, closePendingIntent);
     }
 
+    /**
+     * 播放指定位置
+     * @param position  选中位置
+     */
     public void play(int position) {
         mPosition = position;
         if (mPosition == -1) {
             mPosition++;
         }
         Log.d(TAG, "play: " + mPosition);
-        //监听音乐播放完毕事件，自动下一曲'
         //播放时 获取当前歌曲列表是否有歌曲
         if (list.size() <= 0) {
             return;
@@ -238,8 +241,10 @@ public class MusicService extends Service {
         }
     }
 
+    /**
+     * 上一首
+     */
     public void previousMusic() {
-        Log.d(TAG, "previousMusic: " + mPosition);
         if (mPosition <= 0) {
             mPosition = list.size() - 1;
         } else {
@@ -248,8 +253,10 @@ public class MusicService extends Service {
         play(mPosition);
     }
 
+    /**
+     * 下一首
+     */
     public void nextMusic() {
-        Log.d(TAG, "nextMusic: " + mPosition);
         if (mPosition >= list.size() - 1) {
             mPosition = 0;
         } else {
@@ -258,6 +265,9 @@ public class MusicService extends Service {
         play(mPosition);
     }
 
+    /**
+     * 播放或暂停
+     */
     public void playOrPause() {
         if (mPosition == -1) {
             play(0);
@@ -272,6 +282,9 @@ public class MusicService extends Service {
         updateNotificationShow(mPosition);
     }
 
+    /**
+     * 关闭通知栏
+     */
     public void closeNotification() {
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {

@@ -67,23 +67,12 @@ public class MainActivity extends BaseActivity {
                             adapter.notifyDataSetChanged();
                         }
                         if (isPlaying) {
-                            mBtnPlay.setIcon(getDrawable(R.drawable.bofang_bg));
-                            mBtnPlay.setIconTint(getColorStateList(R.color.white));
-                            albumAnimator.pause();
                             isPlaying = false;
+                            pauseStyle();
                         } else {
-                            mBtnPlay.setIcon(getDrawable(R.drawable.zanting_bg));
-                            mBtnPlay.setIconTint(getColorStateList(R.color.gold_color));
-                            if (MusicUtils.getAlbumPic(list.get(mPosition).getPath()) != null) {
-                                mIvAlbum.setImageBitmap(MusicUtils.getAlbumPic(list.get(mPosition).getPath()));
-                            } else {
-                                mIvAlbum.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pic_1));
-                            }
-                            mTvSongName.setText(list.get(mPosition).getSong() + "-" + list.get(mPosition).getSinger());
-                            albumAnimator.start();
                             isPlaying = true;
+                            playStyle();
                         }
-                        Log.d(TAG, " play");
                         break;
                     case Constants.PREV:
                         if (mPosition != -1) list.get(mPosition).setCheck(false);
@@ -96,17 +85,7 @@ public class MainActivity extends BaseActivity {
                         Song s1 = list.get(mPosition);
                         s1.setCheck(true);
                         adapter.notifyDataSetChanged();
-                        if (MusicUtils.getAlbumPic(s1.getPath()) != null) {
-                            mIvAlbum.setImageBitmap(MusicUtils.getAlbumPic(s1.getPath()));
-                        } else {
-                            mIvAlbum.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pic_1));
-                        }
-                        mTvSongName.setText(s1.getSong() + "-" + s1.getSinger());
-                        mBtnPlay.setIcon(getDrawable(R.drawable.zanting_bg));
-                        mBtnPlay.setIconTint(getColorStateList(R.color.gold_color));
-                        albumAnimator.resume();
-                        albumAnimator.start();
-                        Log.d(TAG, " prev");
+                        playStyle();
                         break;
                     case Constants.NEXT:
                         if (mPosition != -1) list.get(mPosition).setCheck(false);
@@ -119,21 +98,10 @@ public class MainActivity extends BaseActivity {
                         Song s2 = list.get(mPosition);
                         s2.setCheck(true);
                         adapter.notifyDataSetChanged();
-                        if (MusicUtils.getAlbumPic(s2.getPath()) != null) {
-                            mIvAlbum.setImageBitmap(MusicUtils.getAlbumPic(s2.getPath()));
-                        } else {
-                            mIvAlbum.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pic_1));
-                        }
-                        mTvSongName.setText(s2.getSong() + "-" + s2.getSinger());
-                        mBtnPlay.setIcon(getDrawable(R.drawable.zanting_bg));
-                        mBtnPlay.setIconTint(getColorStateList(R.color.gold_color));
-                        albumAnimator.resume();
-                        albumAnimator.start();
-                        Log.d(TAG, " next");
+                        playStyle();
                         break;
                     case Constants.CLOSE:
                         finish();
-                        Log.d(TAG, " close");
                         break;
                     default:
                         break;
@@ -157,7 +125,6 @@ public class MainActivity extends BaseActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private List<Song> list;
     private RecyclerView.LayoutManager layoutManager;
-    private Intent serviceIntent;
 
     @Override
     public int initLayout() {
@@ -184,7 +151,7 @@ public class MainActivity extends BaseActivity {
         mRvMusic.setLayoutManager(layoutManager);
         adapter = new MusicAdapter(context, list);
         mRvMusic.setAdapter(adapter);
-        serviceIntent = new Intent(context, MusicService.class);
+        Intent serviceIntent = new Intent(context, MusicService.class);
         bindService(serviceIntent, connection, BIND_AUTO_CREATE);
         permissionsRequest();
         refreshList();
@@ -194,11 +161,13 @@ public class MainActivity extends BaseActivity {
     @Override
     public void initEvent() {
         adapter.setOnClickListener(position -> {
+            isPlaying = true;
             if (mPosition != -1) list.get(mPosition).setCheck(false);
             list.get(position).setCheck(true);
             mPosition = position;
             adapter.notifyDataSetChanged();
-            changeSong(mPosition);
+            playStyle();
+            musicService.play(mPosition);
         });
         mFloatingBtn.setOnClickListener(v -> {
             movePlayPosition();
@@ -219,18 +188,16 @@ public class MainActivity extends BaseActivity {
                 mPosition = 0;
                 list.get(mPosition).setCheck(true);
                 adapter.notifyDataSetChanged();
-                changeSong(0);
+                isPlaying = true;
+                playStyle();
+                musicService.play(mPosition);
             } else {
                 musicService.playOrPause();
                 if (isPlaying) {
-                    mBtnPlay.setIcon(getDrawable(R.drawable.bofang_bg));
-                    mBtnPlay.setIconTint(getColorStateList(R.color.white));
-                    albumAnimator.pause();
+                    pauseStyle();
                     isPlaying = false;
                 } else {
-                    mBtnPlay.setIcon(getDrawable(R.drawable.zanting_bg));
-                    mBtnPlay.setIconTint(getColorStateList(R.color.gold_color));
-                    albumAnimator.start();
+                    playStyle();
                     isPlaying = true;
                 }
             }
@@ -266,6 +233,9 @@ public class MainActivity extends BaseActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * 菜单按钮监听
+     */
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -280,6 +250,9 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 刷新列表
+     */
     @SuppressLint("NotifyDataSetChanged")
     private void refreshList() {
         list.clear();
@@ -290,6 +263,10 @@ public class MainActivity extends BaseActivity {
         adapter.notifyDataSetChanged();
     }
 
+    /**
+     * 显示悬浮按钮
+     * @param isScroll  是否滚动
+     */
     private void showFloatBtn(boolean isScroll) {
         if (mPosition == -1) return;
         if (isScroll) {
@@ -301,6 +278,9 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 请求权限
+     */
     private void permissionsRequest() {
         new Thread(() -> {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
@@ -310,6 +290,9 @@ public class MainActivity extends BaseActivity {
         }).start();
     }
 
+    /**
+     * 申请权限的回调
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -319,12 +302,12 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-
+    /**
+     * 更改为播放样式
+     */
     @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
-    private void changeSong(int position) {
-        isPlaying = true;
-        Song song = list.get(position);
-        musicService.play(position);
+    private void playStyle() {
+        Song song = list.get(mPosition);
         if (MusicUtils.getAlbumPic(song.getPath()) != null) {
             mIvAlbum.setImageBitmap(MusicUtils.getAlbumPic(song.getPath()));
         } else {
@@ -333,8 +316,17 @@ public class MainActivity extends BaseActivity {
         mTvSongName.setText(song.getSong() + "-" + song.getSinger());
         mBtnPlay.setIcon(getDrawable(R.drawable.zanting_bg));
         mBtnPlay.setIconTint(getColorStateList(R.color.gold_color));
-//        albumAnimator.resume();
         albumAnimator.start();
+    }
+
+    /**
+     * 更改为暂停样式
+     */
+    @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
+    private void pauseStyle() {
+        mBtnPlay.setIcon(getDrawable(R.drawable.bofang_bg));
+        mBtnPlay.setIconTint(getColorStateList(R.color.white));
+        albumAnimator.pause();
     }
 }
 

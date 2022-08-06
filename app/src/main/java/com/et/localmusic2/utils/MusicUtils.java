@@ -15,6 +15,9 @@ import java.util.List;
 
 public class MusicUtils {
 
+    /**
+     * 获取音乐列表
+     */
     @SuppressLint("Range")
     public static List<Song> getMusicData(Context context) {
         List<Song> list = new ArrayList<>();
@@ -39,6 +42,9 @@ public class MusicUtils {
         return list;
     }
 
+    /**
+     * 获取音乐封面
+     */
     public static Bitmap getAlbumPic(String path) {
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         mmr.setDataSource(path);
