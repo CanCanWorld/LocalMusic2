@@ -45,14 +45,15 @@ public class MusicService extends Service {
     int mPosition = -1;
     private final int NOTIFICATION_ID = 1;
     private static Notification notification;
-    private OnButtonClick onButtonClick;
+    private OnStateListener onStateListener;
 
-    public interface OnButtonClick {
-        void buttonClick(String state);
+    //监听通知栏按钮点击
+    public interface OnStateListener {
+        void changeState(String state);
     }
 
-    public void setOnButtonClick(OnButtonClick onButtonClick) {
-        this.onButtonClick = onButtonClick;
+    public void setOnStateListener(OnStateListener onStateListener) {
+        this.onStateListener = onStateListener;
     }
 
     public MusicService() {
@@ -83,7 +84,10 @@ public class MusicService extends Service {
         list.clear();
         list.addAll(MusicUtils.getMusicData(this));
         mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnCompletionListener(mp -> nextMusic());
+        mediaPlayer.setOnCompletionListener(mp -> {
+            nextMusic();
+            onStateListener.changeState(Constants.NEXT);
+        });
     }
 
     @Override
@@ -133,10 +137,9 @@ public class MusicService extends Service {
         int importance = NotificationManager.IMPORTANCE_HIGH;
         createNotificationChannel(channelId, channelName, importance);
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
-                0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         notification = new NotificationCompat.Builder(this, channelId)
-//                .setContentIntent(pendingIntent)
+                .setContentIntent(pendingIntent)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(R.drawable.pic_1)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.pic_1))
@@ -215,7 +218,8 @@ public class MusicService extends Service {
 
     /**
      * 播放指定位置
-     * @param position  选中位置
+     *
+     * @param position 选中位置
      */
     public void play(int position) {
         mPosition = position;
@@ -313,7 +317,7 @@ public class MusicService extends Service {
          * @param state 状态码
          */
         private void UIControl(String state) {
-            onButtonClick.buttonClick(state);
+            onStateListener.changeState(state);
             switch (state) {
                 case Constants.PLAY:
                     playOrPause();

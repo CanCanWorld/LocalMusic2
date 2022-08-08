@@ -52,13 +52,23 @@ public class MainActivity extends BaseActivity {
     private ShapeableImageView mIvAlbum;
     private MusicService.MusicBinder musicBinder;
     private MusicService musicService;
+    private boolean isPlaying;
+    //当前播放位置
+    private int mPosition;
+    private List<Song> list;
+    //请求状态码
+    private static final int REQUEST_PERMISSION_CODE = 1;
+    //读写权限
+    private static final String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private final ServiceConnection connection = new ServiceConnection() {
-        @SuppressLint({"NotifyDataSetChanged", "UseCompatLoadingForDrawables", "SetTextI18n"})
+        @SuppressLint({"NotifyDataSetChanged"})
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             musicBinder = (MusicService.MusicBinder) service;
             musicService = musicBinder.getService();
-            musicService.setOnButtonClick(state -> {
+            musicService.setOnStateListener(state -> {
                 switch (state) {
                     case Constants.PLAY:
                         if (mPosition == -1) {
@@ -115,17 +125,6 @@ public class MainActivity extends BaseActivity {
         }
     };
 
-    private boolean isPlaying;
-    private int mPosition;
-    //请求状态码
-    private static final int REQUEST_PERMISSION_CODE = 1;
-    //读写权限
-    private static final String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    private List<Song> list;
-    private RecyclerView.LayoutManager layoutManager;
-
     @Override
     public int initLayout() {
         return R.layout.activity_main;
@@ -147,7 +146,7 @@ public class MainActivity extends BaseActivity {
         mPosition = -1;
         list = new ArrayList<>();
         initAnimation();
-        layoutManager = new LinearLayoutManager(context);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
         mRvMusic.setLayoutManager(layoutManager);
         adapter = new MusicAdapter(context, list);
         mRvMusic.setAdapter(adapter);
@@ -157,7 +156,7 @@ public class MainActivity extends BaseActivity {
         refreshList();
     }
 
-    @SuppressLint({"NotifyDataSetChanged", "UseCompatLoadingForDrawables"})
+    @SuppressLint({"NotifyDataSetChanged"})
     @Override
     public void initEvent() {
         adapter.setOnClickListener(position -> {
@@ -169,9 +168,9 @@ public class MainActivity extends BaseActivity {
             playStyle();
             musicService.play(mPosition);
         });
-        mFloatingBtn.setOnClickListener(v -> {
-            movePlayPosition();
-        });
+        mFloatingBtn.setOnClickListener(v ->
+                mRvMusic.scrollToPosition(mPosition == -1 ? 0 : mPosition)
+        );
         mRvMusic.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -208,11 +207,6 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         unbindService(connection);
-    }
-
-    private void movePlayPosition() {
-        if (mPosition == -1) return;
-        layoutManager.scrollToPosition(mPosition);
     }
 
     /**
@@ -265,16 +259,15 @@ public class MainActivity extends BaseActivity {
 
     /**
      * 显示悬浮按钮
-     * @param isScroll  是否滚动
+     *
+     * @param isScroll 是否滚动
      */
     private void showFloatBtn(boolean isScroll) {
         if (mPosition == -1) return;
         if (isScroll) {
             mFloatingBtn.setVisibility(View.VISIBLE);
         } else {
-            new Handler(Looper.myLooper()).postDelayed(() -> {
-                mFloatingBtn.setVisibility(View.GONE);
-            }, 2000);
+            new Handler(Looper.myLooper()).postDelayed(() -> mFloatingBtn.setVisibility(View.GONE), 2000);
         }
     }
 
@@ -322,7 +315,7 @@ public class MainActivity extends BaseActivity {
     /**
      * 更改为暂停样式
      */
-    @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
+    @SuppressLint({"UseCompatLoadingForDrawables"})
     private void pauseStyle() {
         mBtnPlay.setIcon(getDrawable(R.drawable.bofang_bg));
         mBtnPlay.setIconTint(getColorStateList(R.color.white));
